@@ -1,17 +1,17 @@
 # ESQueryBulid
 
-以QueryBulider的形式来使用ES，并对结果进行封装返回（如果错误直接返回ES报错信息）
+以QueryBulider的形式来调用elasticsearch的PHP类，只是针对查询及结果做了封装
 
-如果你使用过任何PHP框架，那么很快就可以入门
+如果你使用过任何PHP框架，那么很快就可以入门，比较像sql语句
 
-本类暂时只在ES5.4版本上进行了验证，其他版本未做验证
+本类暂时只在elasticsearch 5.4版本上进行了验证，其他版本未做验证
 
 ### 举几个例子：
 
 #### 初始化
 
     include 'ESQueryBuilder.php';
-    
+
     $ESQueryBuilder = new ESQueryBuilder('http://127.0.0.1:9200/test_index/test_type'); 
     // IP:端口/索引(库)/类型(表) 且支持多hosts数组形式
     

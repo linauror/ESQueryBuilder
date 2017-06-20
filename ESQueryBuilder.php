@@ -10,7 +10,7 @@
  * 初始化
  *
  * include 'ESQueryBuilder.php';
- * $ESQueryBuilder = new ESQueryBuilder('http://10.100.120.183:9200/dev_order_index/dev_order_type'); IP:端口/索引(库)/类型(表) 且支持多hosts数组形式
+ * $ESQueryBuilder = new ESQueryBuilder('http://127.0.0.1:9200/test_index/test_type'); IP:端口/索引(库)/类型(表) 且支持多hosts数组形式
  *
  * 单条查询
  *

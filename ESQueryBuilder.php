@@ -405,7 +405,8 @@ class ESQueryBuilder
             $select = $this->queryArr['_source'];
             $_select = array_reverse($select);
             foreach($_select as $v) {
-                $query = ['aggs' => [$v => ['terms' => ['field' => $this->isKeyword($v)]] + $query]];
+                // size=10000000为了解决聚合分页的问题，sum_other_doc_count有值代表有未统计到的
+                $query = ['aggs' => [$v => ['terms' => ['field' => $this->isKeyword($v), 'size' => 10000000]] + $query]];
             }
         }
         $this->queryArr += $query;

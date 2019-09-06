@@ -119,10 +119,10 @@ class ESQueryBuilder
     {
         if (is_array($field)) {
             foreach ($field as $k => $v) {
-                $this->queryArr['query']['bool']['must'][]['term'] = [$this->isKeyword($k) => ['value' => $v]];
+                $this->queryArr['query']['bool']['must'][]['term'] = [$this->isKeyword($k) => $v];
             }
         } else {
-            $this->queryArr['query']['bool']['must'][]['term'] = [$this->isKeyword($field) => ['value' => $value]];
+            $this->queryArr['query']['bool']['must'][]['term'] = [$this->isKeyword($field) => $value];
         }
 
         return $this;
@@ -160,10 +160,10 @@ class ESQueryBuilder
     {
         if (is_array($field)) {
             foreach ($field as $k => $v) {
-                $this->queryArr['query']['bool']['must_not'][]['term'] = [$this->isKeyword($k) => ['value' => $v]];
+                $this->queryArr['query']['bool']['must_not'][]['term'] = [$this->isKeyword($k) => $v];
             }
         } else {
-            $this->queryArr['query']['bool']['must_not'][]['term'] = [$this->isKeyword($field) => ['value' => $value]];
+            $this->queryArr['query']['bool']['must_not'][]['term'] = [$this->isKeyword($field) => $value];
         }
 
         return $this;

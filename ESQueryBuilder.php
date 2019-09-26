@@ -92,7 +92,7 @@ class ESQueryBuilder
      */
     public function select($fileds)
     {
-        $fileds = explode(',', $fileds);
+        !is_array($fileds) && $fileds = explode(',', $fileds);
         $this->queryArr['_source'] = $fileds;
         return $this;
     }

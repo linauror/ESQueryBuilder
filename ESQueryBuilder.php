@@ -39,6 +39,7 @@ class ESQueryBuilder
     private $type;
     private $mapCacheDir; // mapping缓存路径
     private $mapping;
+    private $groupBy;
 
     public function __construct($hosts)
     {
@@ -335,7 +336,7 @@ class ESQueryBuilder
      */
     public function groupBy($field)
     {
-        $this->queryArr['_source'][] = $field;
+        $this->groupBy = $field;
         return $this;
     }
 
@@ -389,7 +390,7 @@ class ESQueryBuilder
     }
 
     /**
-     * 获取聚合结果
+     * 获取聚合结果,不适用于select
      * @param bool $getQuery 返回原始请求
      * @param bool $rawResult 返回原始结果
      * @return array|mixed
@@ -401,13 +402,11 @@ class ESQueryBuilder
         if ($this->aggs) {
             $query = ['aggs' => $this->aggs];
         }
-        if (isset($this->queryArr['_source'])) {
-            $select = $this->queryArr['_source'];
-            $_select = array_reverse($select);
-            foreach($_select as $v) {
-                // size=10000000为了解决聚合分页的问题，sum_other_doc_count有值代表有未统计到的
-                $query = ['aggs' => [$v => ['terms' => ['field' => $this->isKeyword($v), 'size' => 10000000]] + $query]];
-            }
+
+        if ($this->groupBy) {
+            $this->queryArr['_source'] = [$this->groupBy];
+            // size=10000000为了解决聚合分页的问题，sum_other_doc_count有值代表有未统计到的
+            $query = ['aggs' => [$this->groupBy => ['terms' => ['field' => $this->isKeyword($this->groupBy), 'size' => 10000000]] + $query]];
         }
         $this->queryArr += $query;
 
@@ -420,12 +419,17 @@ class ESQueryBuilder
         }
 
         $_result = [];
-        if (!$result['hits']['total']) {
-            return $_result;
-        }
-
-        if (isset($select)) {
-            $_result = $this->aggsDecode($result['aggregations'], $select);
+        if ($this->groupBy) {
+            foreach ($result['aggregations'][$this->groupBy]['buckets'] as $line) {
+                $k = $line['key'];
+                foreach ($line as $kk => $vv) {
+                    $_result[$k][$this->groupBy] = $k;
+                    if (is_array($vv)) {
+                        $_result[$k][$kk] = $vv['value'];
+                    }
+                }
+            }
+            $this->groupBy = '';
         } else {
             foreach ($result['aggregations'] as $k => $v) {
                 $_result[$k] = $v['value'];
@@ -433,40 +437,6 @@ class ESQueryBuilder
         }
 
         return $_result;
-    }
-
-    /**
-     * 解析聚合数据
-     * @param array $aggs
-     * @param array $select
-     * @param array $addon
-     * @param array $result
-     * @return array|mixed
-     */
-    public function aggsDecode($aggs = [], $select = [], $addon = [], &$result = [])
-    {
-        if ($select) {
-            $key = current($select);
-            $aggs = $aggs[$key]['buckets'];
-            foreach($aggs as $v) {
-                $addon[$key] = $v['key'];
-                $_select = $select;
-                array_shift($_select);
-                $this->aggsDecode($v, $_select, $addon, $result);
-            }
-        } else {
-            $_last = [];
-            foreach($aggs as $k => $v) {
-                if (is_array($v)) {
-                    $_last[$k] = $v['value']; 
-                }
-            }
-
-            $last = array_merge($addon, $_last);
-            $result[] = $last;
-        }
-
-        return $result;
     }
 
     /**
